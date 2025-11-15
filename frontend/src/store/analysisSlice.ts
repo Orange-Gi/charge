@@ -1,10 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { AnalysisReport } from '../types';
 
 interface AnalysisState {
   progress: number;
-  result: any | null;
+  result: AnalysisReport | null;
   thinking: string | null;
   loading: boolean;
+  error: string | null;
 }
 
 const initialState: AnalysisState = {
@@ -12,6 +14,7 @@ const initialState: AnalysisState = {
   result: null,
   thinking: null,
   loading: false,
+  error: null,
 };
 
 const analysisSlice = createSlice({
@@ -21,7 +24,7 @@ const analysisSlice = createSlice({
     setProgress: (state, action: PayloadAction<number>) => {
       state.progress = action.payload;
     },
-    setResult: (state, action: PayloadAction<any>) => {
+    setResult: (state, action: PayloadAction<AnalysisReport | null>) => {
       state.result = action.payload;
     },
     setThinking: (state, action: PayloadAction<string | null>) => {
@@ -30,15 +33,13 @@ const analysisSlice = createSlice({
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
-    reset: (state) => {
-      state.progress = 0;
-      state.result = null;
-      state.thinking = null;
-      state.loading = false;
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
     },
+    reset: () => initialState,
   },
 });
 
-export const { setProgress, setResult, setThinking, setLoading, reset } = analysisSlice.actions;
+export const { setProgress, setResult, setThinking, setLoading, setError, reset } =
+  analysisSlice.actions;
 export default analysisSlice.reducer;
-
