@@ -1,0 +1,94 @@
+import React, { useState } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { TextInput, Button, Card } from 'react-native-paper';
+import { useAuth } from '../hooks/useAuth';
+import { authApi } from '../services/api';
+
+export default function RegisterScreen({ navigation }: any) {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+
+  const handleRegister = async () => {
+    setLoading(true);
+    try {
+      const result = await authApi.register(username, email, password);
+      login(result, result.token);
+    } catch (error) {
+      console.error('注册失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Card style={styles.card}>
+        <Card.Title title="注册" />
+        <Card.Content>
+          <TextInput
+            label="用户名"
+            value={username}
+            onChangeText={setUsername}
+            mode="outlined"
+            style={styles.input}
+          />
+          <TextInput
+            label="邮箱"
+            value={email}
+            onChangeText={setEmail}
+            mode="outlined"
+            keyboardType="email-address"
+            style={styles.input}
+          />
+          <TextInput
+            label="密码"
+            value={password}
+            onChangeText={setPassword}
+            mode="outlined"
+            secureTextEntry
+            style={styles.input}
+          />
+          <Button
+            mode="contained"
+            onPress={handleRegister}
+            loading={loading}
+            style={styles.button}
+          >
+            注册
+          </Button>
+          <Button
+            mode="text"
+            onPress={() => navigation.navigate('Login')}
+            style={styles.linkButton}
+          >
+            已有账号？登录
+          </Button>
+        </Card.Content>
+      </Card>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 16,
+  },
+  card: {
+    padding: 16,
+  },
+  input: {
+    marginBottom: 16,
+  },
+  button: {
+    marginTop: 8,
+  },
+  linkButton: {
+    marginTop: 16,
+  },
+});
+
