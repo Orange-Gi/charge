@@ -1,23 +1,26 @@
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../store/store';
+import { useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { setCredentials, logout } from '../store/authSlice';
+import type { AppDispatch, RootState } from '../store/store';
+import type { User } from '../types';
 
 export function useAuth() {
-  const dispatch = useDispatch();
-  const { user, token, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
+  const authState = useSelector((state: RootState) => state.auth);
 
-  const login = (user: any, token: string) => {
-    dispatch(setCredentials({ user, token }));
-  };
+  const login = useCallback(
+    (user: User, token: string) => {
+      dispatch(setCredentials({ user, token }));
+    },
+    [dispatch]
+  );
 
-  const logoutUser = () => {
+  const logoutUser = useCallback(() => {
     dispatch(logout());
-  };
+  }, [dispatch]);
 
   return {
-    user,
-    token,
-    isAuthenticated,
+    ...authState,
     login,
     logout: logoutUser,
   };
