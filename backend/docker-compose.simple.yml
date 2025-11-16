@@ -1,0 +1,17 @@
+# 简化版配置 - 只启动后端服务
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # 使用本地服务或留空（如果不需要数据库功能）
+      DATABASE_URL: postgresql+asyncpg://user:password@host.docker.internal:5432/charge_db
+      REDIS_HOST: host.docker.internal
+      REDIS_PORT: 6379
+      MINIO_ENDPOINT: host.docker.internal:9000
+    volumes:
+      - ./app:/app/app
+      - ./models:/app/models
+      - ./data:/app/data
+

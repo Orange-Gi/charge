@@ -11,6 +11,18 @@ const api = axios.create({
   timeout: 30000,
 });
 
+// 统一响应错误处理：提取后端的 detail
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const detail =
+      error?.response?.data?.detail ||
+      error?.message ||
+      '请求失败，请稍后重试';
+    return Promise.reject(new Error(detail));
+  }
+);
+
 api.interceptors.request.use((config) => {
   const token = store.getState().auth.token;
   if (token) {

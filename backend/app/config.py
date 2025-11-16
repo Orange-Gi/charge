@@ -9,10 +9,12 @@ class Settings(BaseSettings):
     # 应用基础配置
     APP_NAME: str = "充电分析系统"
     APP_VERSION: str = "1.0.0"
-    DEBUG: bool = False
+    DEBUG: bool = True  # 开发环境启用调试模式
     
     # 数据库配置
-    DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost:5432/charge_db"
+    # 注意：密码中的 @ 需要 URL 编码为 %40
+    # 示例远程数据库：59.110.13.212:5432 / appuser / appdb / Str0ngP@ss_ChangeMe
+    DATABASE_URL: str = "postgresql+asyncpg://appuser:Str0ngP%40ss_ChangeMe@59.110.13.212:5432/appdb"
     
     # Redis配置
     REDIS_HOST: str = "localhost"

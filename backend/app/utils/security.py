@@ -8,15 +8,32 @@ from app.config import settings
 # 密码加密上下文
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+def _truncate_for_bcrypt(plain: str) -> str:
+    """
+    将密码按 bcrypt 的 72 字节限制进行截断。
+    注意：bcrypt 仅使用前 72 字节；超出部分将被忽略。
+    为避免库抛错，这里在入库哈希与校验时统一截断。
+    """
+    raw = plain.encode("utf-8")
+    if len(raw) <= 72:
+        return plain
+    raw = raw[:72]
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        # 若截断处落在多字节字符中，忽略不完整字节
+        return raw.decode("utf-8", errors="ignore")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """验证密码"""
-    return pwd_context.verify(plain_password, hashed_password)
+    safe_plain = _truncate_for_bcrypt(plain_password)
+    return pwd_context.verify(safe_plain, hashed_password)
 
 
 def get_password_hash(password: str) -> str:
     """生成密码哈希"""
-    return pwd_context.hash(password)
+    safe_plain = _truncate_for_bcrypt(password)
+    return pwd_context.hash(safe_plain)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:

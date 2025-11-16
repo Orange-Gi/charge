@@ -24,18 +24,26 @@ export default function LoginPage() {
   const handleSubmit = async (values: LoginForm) => {
     setLoading(true);
     try {
-      const data = await authApi.login(values);
-      const token = data.access_token ?? data.token;
-      if (data.user && token) {
-        login(data.user, token);
+      const data = await authApi.login(values); // { user_id, username, role, token, refresh_token, expires_in }
+      const token = data?.token ?? data?.access_token;
+      if (data?.user_id && token) {
+        // 后端未直接返回 user 对象，这里从响应拼装
+        const user = {
+          id: data.user_id,
+          username: data.username,
+          email: '', // 未返回邮箱，留空或后续 /me 拉取
+          role: (data.role ?? 'user') as 'admin' | 'user',
+        };
+        login(user, token);
         message.success('登录成功');
         navigate('/dashboard');
       } else {
-        throw new Error('返回数据不完整');
+        throw new Error('登录失败：响应数据不完整');
       }
     } catch (error) {
+      const msg = error instanceof Error ? error.message : '登录失败，请检查账号密码';
       console.error(error);
-      message.error('登录失败，请检查账号密码');
+      message.error(msg);
     } finally {
       setLoading(false);
     }

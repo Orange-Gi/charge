@@ -16,31 +16,42 @@ router = APIRouter()
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db)):
     """用户注册"""
-    service = AuthService(db)
-    user = await service.register(
-        username=request.username,
-        email=request.email,
-        password=request.password
-    )
-    
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="用户名或邮箱已存在"
+    try:
+        service = AuthService(db)
+        user = await service.register(
+            username=request.username,
+            email=request.email,
+            password=request.password
         )
-    
-    # 生成令牌
-    access_token = create_access_token(data={"sub": str(user.id), "username": user.username})
-    refresh_token = create_refresh_token(data={"sub": str(user.id)})
-    
-    return TokenResponse(
-        user_id=str(user.id),
-        username=user.username,
-        role=user.role,
-        token=access_token,
-        refresh_token=refresh_token,
-        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
-    )
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="用户名或邮箱已存在"
+            )
+        
+        # 生成令牌
+        access_token = create_access_token(data={"sub": str(user.id), "username": user.username})
+        refresh_token = create_refresh_token(data={"sub": str(user.id)})
+        
+        return TokenResponse(
+            user_id=str(user.id),
+            username=user.username,
+            role=user.role,
+            token=access_token,
+            refresh_token=refresh_token,
+            expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        from app.logging.logger import get_logger
+        logger = get_logger("auth_api")
+        logger.error("注册失败", error=str(e), exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"注册失败: {str(e)}"
+        )
 
 
 @router.post("/login", response_model=TokenResponse)

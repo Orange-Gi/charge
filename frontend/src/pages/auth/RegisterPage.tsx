@@ -21,8 +21,9 @@ export default function RegisterPage() {
       message.success('注册成功，请登录');
       navigate('/login');
     } catch (error) {
+      const msg = error instanceof Error ? error.message : '注册失败，请稍后重试';
       console.error(error);
-      message.error('注册失败，请稍后重试');
+      message.error(msg);
     } finally {
       setLoading(false);
     }
